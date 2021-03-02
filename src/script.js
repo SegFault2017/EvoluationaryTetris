@@ -1,9 +1,11 @@
-
 // --- Setup -----------------------------------------------
 // - Canvas Context -
 var cnv = document.getElementById('cnv'),
     ctx = cnv.getContext('2d');
 ctx.scale(20, 20);
+
+
+
 
 // Color palette for the blocks
 var palettes = {
@@ -17,12 +19,25 @@ var level = 0;
 var linesCleared = 0;
 var paused = false;
 var pieceArray = ['T', 'O', 'I', 'L', 'J', 'S', 'Z'];
+var humanMode = true;
+var ai = new AI({
+    heightWeight: 0.510066,
+    linesWeight: 0.760666,
+    holesWeight: 0.35663,
+    bumpinessWeight: 0.184483
+});
+
+
+
 
 // Arena
 var arena = {
     // Props
     pos: { x: 10, y: 2 },
+    width: 10,
+    height: 22,
     matrix: createMatrix(10, 22),
+
     // Methods
     draw: function () {
         drawMatrix(this.matrix, this.pos);
@@ -33,6 +48,57 @@ var arena = {
         ctx.strokeStyle = "#FFF";
         ctx.strokeRect(this.pos.x, this.pos.y, this.matrix[0].length, this.matrix.length);
     },
+    columnHeight: function (c) {
+        let r = 0;
+        for (; r < this.height && this.matrix[r][c] == 0; r++);
+        return this.height - r;
+    },
+    isLine: function (row) {
+        for (let c = 0; c < this.width; c++) {
+            if (this.matrix[row][c] == 0) {
+                return false;
+            }
+        }
+        return true;
+    }
+    ,
+    aggregateHeight: function () {
+        let total = 0;
+        for (var c = 0; c < this.width; c++) {
+            total += this.columnHeight(c);
+        }
+        return total;
+    },
+    lines: function () {
+        var count = 0;
+        for (var r = 0; r < this.height; r++) {
+            if (this.isLine(r)) {
+                count++;
+            }
+        }
+        return count;
+    },
+    holes: function () {
+        let count = 0;
+        for (var c = 0; c < this.width; c++) {
+            var block = false;
+            for (var r = 0; r < this.height; r++) {
+                if (this.matrix[r][c] != 0) {
+                    block = true;
+                } else if (this.matrix[r][c] == 0 && block) {
+                    count++;
+                }
+            }
+        }
+        return count;
+    },
+    bumpiness: function () {
+        let total = 0;
+        for (let c = 0; c < this.width - 1; c++) {
+            total += Math.abs(this.columnHeight(c) - this.columnHeight(c + 1));
+        }
+        return total;
+    }
 };
 
 // Player 
@@ -46,6 +112,7 @@ var player = {
     highscore: 0,
     // Methods
     collisionCheck: function (pos) {
+        // debugger;
         var m = this.matrix, o = pos || this.pos;
         for (var y = 0; y < m.length; ++y) {
             for (var x = 0; x < m[y].length; ++x) {
@@ -59,7 +126,7 @@ var player = {
     draw: function () {
         drawMatrix(this.matrix, { x: this.pos.x + arena.pos.x, y: this.pos.y + arena.pos.y });
         // Ghost piece
-        for (var y = 0; y < 20; y++) {
+        for (var y = 0; y < arena.height; y++) {
             if (this.collisionCheck({ x: this.pos.x, y: y }) && y >= this.pos.y) {
                 drawMatrix(this.matrix, { x: this.pos.x + arena.pos.x, y: y + arena.pos.y - 1 }, 'rgba(255,255,255,0.15)');
                 return false;
@@ -76,15 +143,21 @@ var player = {
         }
         dropCount = 0;
     },
-    hardDrop: function () {
-        var count = 0;
-        while ((!this.collisionCheck()) && count < 20) {
+    hardDropNotLand: function () {
+        let count = 0;
+        while ((!this.collisionCheck()) && count < arena.height) {
             this.pos.y++;
             count++;
         }
         this.pos.y--;
-        this.score += Math.max(count - 1, 0) * 2;
-        this.highscore = Math.max(this.highscore, this.score);
+    },
+    hardDrop: function () {
+        var count = 0;
+        while ((!this.collisionCheck()) && count < arena.height) {
+            this.pos.y++;
+            count++;
+        }
+        this.pos.y--;
         this.drop();
     },
     merge: function () {
@@ -96,14 +169,32 @@ var player = {
             });
         });
     },
+    unMerge: function () {
+        this.matrix.forEach((row, y) => {
+            row.forEach((value, x) => {
+                if (value !== 0) {
+                    arena.matrix[y + this.pos.y][x + this.pos.x] = 0;
+                }
+            });
+        });
+    },
+
     reset: function () {
         this.matrix = this.nextPiece;
         this.nextPiece = randomPiece();
         this.pos.y = 0;
         this.pos.x = Math.floor(arena.matrix[0].length / 2) - Math.floor(this.matrix[0].length / 2);
+        if (this.collisionCheck()) {
+            alert("Game Over")
+            reset();
+        }
+        if (!humanMode) {
+            elite = ai._best(player);
+            this.matrix = elite.matrix;
+            this.pos = elite.pos;
+        }
 
-        // Game Over check
-        if (this.collisionCheck()) { reset(); }
+
     },
     rotate: function (dir) {
         for (var y = 0; y < this.matrix.length; ++y) {
@@ -119,7 +210,7 @@ var player = {
         }
 
         if (dir > 0) { this.matrix.forEach(row => row.reverse()); }
-        else { matrix.reverse(); }
+        // else { matrix.reverse(); }
 
         // collision check in case we rotate into the wall/another piece
         var pos = this.pos.x;
@@ -138,6 +229,12 @@ var player = {
         this.pos.x += dir;
         if (this.collisionCheck()) { this.pos.x -= dir; }
     },
+    canMoveLeft: function () {
+        return this.pos.x > 0 && !this.collisionCheck();
+    },
+    canMoveRight: function () {
+        return this.pos.x < arena.width && !this.collisionCheck();
+    },
     switchPiece: function () {
         [this.heldPiece, this.matrix] = [this.matrix, this.heldPiece];
 
@@ -153,13 +250,26 @@ var player = {
                 return;
             }
         }
-    },
+    }
 };
+
+function switchMode() {
+    humanMode = !humanMode;
+    if (humanMode) {
+        dropInterval = humanDropInterval;
+    } else {
+        reset();
+        dropInterval = aiDropInterval;
+    }
+}
+
 
 // Player Piece drop timer
 var lastTime = 0;
 var dropCount = 0;
-var dropInterval = 1000;
+var humanDropInterval = 1000;
+var dropInterval = humanDropInterval;
+var aiDropInterval = humanDropInterval / 100;
 
 // ---------------------------------------------------------
 
@@ -174,14 +284,22 @@ document.addEventListener('keydown', function (e) {
         switch (e.keyCode) {
             case 37: player.shift(-1); break;     // Left
             case 38: player.rotate(1); break;     // Up
-            case 39: player.shift(1); break;      // Right
+            case 39:
+                player.shift(1);
+                console.log("hit");
+                if (!player.collisionCheck()) {
+
+                }
+                break;      // Right
             case 40: player.drop(); break;        // Down
             case 32: player.hardDrop(); break;    // Space
             case 16: player.switchPiece(); break; // Shift
-            // default: console.log(e.keyCode);
+            case 65: switchMode(); break;
         }
     }
 });
+
+
 // ---------------------------------------------------------
 
 // --- Functions -------------------------------------------
@@ -189,6 +307,7 @@ function init() {
     reset();
     frameFunction();
 }
+
 function reset() {
     player.nextPiece = randomPiece();
     arena.matrix.forEach(row => row.fill(0));
@@ -209,7 +328,9 @@ function frameFunction(time = 0) {
         var deltaTime = time - lastTime;
         lastTime = time;
         dropCount += deltaTime;
-        if (dropCount > Math.max((dropInterval - (level * 60)), 60)) { player.drop(); }
+        if (dropCount > Math.max((dropInterval - (level * 60)), 60)) {
+            player.drop();
+        }
     }
 
     // Draw stuff
@@ -305,14 +426,17 @@ function drawUI() {
     ctx.font = '1px monospace';
     ctx.textAlign = 'left';
     // Title or something
-    ctx.fillText('Tetris', 3, 3);
-    ctx.fillText('Evolutionary', 3, 4);
+    ctx.fillText('Evolutionary', 1.5, 3);
+    ctx.fillText('Tetris', 3, 4);
     // Instructions
-    ctx.fillText('← / → = Move Horizontally', 6, 25);
-    ctx.fillText('↑ = Rotate    // SHIFT = Switch', 6, 26);
-    ctx.fillText('↓ = Soft Drop // SPACE = Hard Drop', 6, 27);
-    ctx.fillText('P = Pause     // R = Reset', 6, 28);
-    ctx.fillText('A = AI', 6, 29);
+    if (humanMode) {
+        ctx.fillText('← / → = Move   A = Human', 6, 25);
+    } else {
+        ctx.fillText('← / → = Move   A = AI', 6, 25);
+    }
+    ctx.fillText('↑ = Rotate    SHIFT = Switch', 6, 26);
+    ctx.fillText('↓ = Soft Drop SPACE = Hard Drop', 6, 27);
+    ctx.fillText('P = Pause     R = Reset', 6, 28);
     // Highscore
     ctx.fillText('Highscore', 21, 3);
     ctx.fillText(player.highscore, 21, 4);
@@ -365,6 +489,10 @@ function lineCheck() {
 
 function randomPiece() {
     return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
+}
+
+function clone(object) {
+    return JSON.parse(JSON.stringify(object));
 }
 // ---------------------------------------------------------
 
