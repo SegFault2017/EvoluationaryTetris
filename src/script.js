@@ -106,13 +106,12 @@ var player = {
     // Props
     matrix: [],
     nextPiece: [],
-    heldPiece: randomPiece(),
+    // heldPiece: randomPiece(),
     pos: { x: 0, y: 0 },
     score: 0,
     highscore: 0,
     // Methods
     collisionCheck: function (pos) {
-        // debugger;
         var m = this.matrix, o = pos || this.pos;
         for (var y = 0; y < m.length; ++y) {
             for (var x = 0; x < m[y].length; ++x) {
@@ -185,7 +184,7 @@ var player = {
         this.nextPiece = randomPiece();
         this.pos.y = 0;
         this.pos.x = Math.floor(arena.matrix[0].length / 2) - Math.floor(this.matrix[0].length / 2);
-        debugger;
+        // debugger;
 
         if (this.collisionCheck()) {
             alert("Game Over")
@@ -193,8 +192,11 @@ var player = {
         }
         if (!humanMode) {
             elite = ai._best(player);
-            this.matrix = elite.matrix;
-            this.pos = elite.pos;
+            if (elite) {
+                this.matrix = elite.matrix;
+                this.pos = elite.pos;
+            }
+
         }
 
 
@@ -229,6 +231,7 @@ var player = {
         }
     },
     shift: function (dir) {
+        debugger;
         this.pos.x += dir;
         if (this.collisionCheck()) { this.pos.x -= dir; }
     },
@@ -236,23 +239,42 @@ var player = {
         return this.pos.x > 0 && !this.collisionCheck();
     },
     canMoveRight: function () {
+        // for (var r = 0; r < this.matrix.length; r++) {
+        //     for (var c = 0; c < this.matrix[r].length; c++) {
+        //         var _r = this.pos.y + r;
+        //         var _c = this.pos.x + c - 1;
+        //         if (this.matrix[r][c] != 0) {
+        //             if (!(_c >= 0 && arena.matrix[_r][_c] == 0)) {
+        //                 return false;
+        //             }
+        //         }
+        //     }
+        // }
+        // return true;
         return this.pos.x < arena.width && !this.collisionCheck();
     },
-    switchPiece: function () {
-        [this.heldPiece, this.matrix] = [this.matrix, this.heldPiece];
-
-        // collision check in case we rotate into the wall/another piece
-        var pos = this.pos.x;
-        var offset = 1;
-        while (this.collisionCheck()) {
-            this.pos.x += offset;
-            offset = -(offset + (offset > 0 ? 1 : -1));
-            if (offset > this.matrix[0].length) {
-                player.switchPiece();
-                this.pos.x = pos;
-                return;
-            }
+    moveLeft() {
+        if (!this.canMoveLeft()) {
+            return false;
         }
+        this.pos.x--;
+        return true;
+    },
+    switchPiece: function () {
+        // [this.heldPiece, this.matrix] = [this.matrix, this.heldPiece];
+
+        // // collision check in case we rotate into the wall/another piece
+        // var pos = this.pos.x;
+        // var offset = 1;
+        // while (this.collisionCheck()) {
+        //     this.pos.x += offset;
+        //     offset = -(offset + (offset > 0 ? 1 : -1));
+        //     if (offset > this.matrix[0].length) {
+        //         player.switchPiece();
+        //         this.pos.x = pos;
+        //         return;
+        //     }
+        // }
     }
 };
 
@@ -318,7 +340,7 @@ function reset() {
     arena.matrix.forEach(row => row.fill(0));
     player.reset();
     player.score = 0;
-    player.heldPiece = randomPiece();
+    // player.heldPiece = randomPiece();
     dropCount = 0;
     linesCleared = 0;
     level = 0;
@@ -365,28 +387,28 @@ function createPiece(type) {
             ]; break;
         case 'T':
             return [
-                [0, 0, 0],
-                [2, 2, 2],
                 [0, 2, 0],
+                [2, 2, 2],
+                [0, 0, 0],
             ]; break;
         case 'L':
             return [
-                [0, 3, 0],
-                [0, 3, 0],
-                [0, 3, 3],
+                [0, 0, 3],
+                [3, 3, 3],
+                [0, 0, 0],
             ]; break;
         case 'J':
             return [
-                [0, 4, 0],
-                [0, 4, 0],
-                [4, 4, 0],
+                [4, 0, 0],
+                [4, 4, 4],
+                [0, 0, 0],
             ]; break;
         case 'I':
             return [
-                [0, 5, 0, 0],
-                [0, 5, 0, 0],
-                [0, 5, 0, 0],
-                [0, 5, 0, 0],
+                [0, 0, 0, 0],
+                [5, 5, 5, 5],
+                [0, 0, 0, 0],
+                [0, 0, 0, 0],
             ]; break;
         case 'S':
             return [
@@ -459,7 +481,7 @@ function drawUI() {
     ctx.lineWidth = 0.1;
     ctx.strokeStyle = "#FFF";
     ctx.strokeRect(3, 16, 6, 6);
-    drawMatrix(player.heldPiece, { x: 4, y: 17 })
+    // drawMatrix(player.heldPiece, { x: 4, y: 17 })
     // Next Piece
     ctx.fillStyle = '#FFF';
     ctx.fillText('Next Piece', 21, 15);
@@ -496,6 +518,8 @@ function randomPiece() {
     // return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
     const piece = (createPiece(pieceArray[arena.pieceIdx % (pieceArray.length - 1)]));
     arena.pieceIdx += 1;
+    // debugger;
+    console.log(arena.pieceIdx);
     return piece;
 
 }
