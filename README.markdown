@@ -7,7 +7,7 @@
 - [Genetic](#genetic-algo)
 - [Results](#results)
 - [Used Tech](#used-tech)
-- [More](#more)
+- [Fun Stuff](#fun-stuff)
 
 ## Evlolutionary Tetris
 This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to paly [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
@@ -64,7 +64,7 @@ Project used:
 - Architecture: Basic MVC
 
 
-## More
+## Fun Stuff
 - A [Unity version](https://github.com/SegFault2017/Tetris-With-AI) is avalible here.
 - [Is it possible to Play Tetris forever](https://tetris.fandom.com/wiki/Playing_forever)
 
