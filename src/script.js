@@ -106,7 +106,7 @@ var player = {
     // Props
     matrix: [],
     nextPiece: [],
-    // heldPiece: randomPiece(),
+    heldPiece: randomPiece(),
     pos: { x: 0, y: 0 },
     score: 0,
     highscore: 0,
@@ -239,18 +239,7 @@ var player = {
         return this.pos.x > 0 && !this.collisionCheck();
     },
     canMoveRight: function () {
-        // for (var r = 0; r < this.matrix.length; r++) {
-        //     for (var c = 0; c < this.matrix[r].length; c++) {
-        //         var _r = this.pos.y + r;
-        //         var _c = this.pos.x + c - 1;
-        //         if (this.matrix[r][c] != 0) {
-        //             if (!(_c >= 0 && arena.matrix[_r][_c] == 0)) {
-        //                 return false;
-        //             }
-        //         }
-        //     }
-        // }
-        // return true;
+
         return this.pos.x < arena.width && !this.collisionCheck();
     },
     moveLeft() {
@@ -261,20 +250,20 @@ var player = {
         return true;
     },
     switchPiece: function () {
-        // [this.heldPiece, this.matrix] = [this.matrix, this.heldPiece];
+        [this.heldPiece, this.matrix] = [this.matrix, this.heldPiece];
 
-        // // collision check in case we rotate into the wall/another piece
-        // var pos = this.pos.x;
-        // var offset = 1;
-        // while (this.collisionCheck()) {
-        //     this.pos.x += offset;
-        //     offset = -(offset + (offset > 0 ? 1 : -1));
-        //     if (offset > this.matrix[0].length) {
-        //         player.switchPiece();
-        //         this.pos.x = pos;
-        //         return;
-        //     }
-        // }
+        // collision check in case we rotate into the wall/another piece
+        var pos = this.pos.x;
+        var offset = 1;
+        while (this.collisionCheck()) {
+            this.pos.x += offset;
+            offset = -(offset + (offset > 0 ? 1 : -1));
+            if (offset > this.matrix[0].length) {
+                player.switchPiece();
+                this.pos.x = pos;
+                return;
+            }
+        }
     }
 };
 
@@ -294,7 +283,7 @@ var lastTime = 0;
 var dropCount = 0;
 var humanDropInterval = 1000;
 var dropInterval = humanDropInterval;
-var aiDropInterval = humanDropInterval / 100;
+var aiDropInterval = humanDropInterval / 1000;
 
 // ---------------------------------------------------------
 
@@ -340,7 +329,7 @@ function reset() {
     arena.matrix.forEach(row => row.fill(0));
     player.reset();
     player.score = 0;
-    // player.heldPiece = randomPiece();
+    player.heldPiece = randomPiece();
     dropCount = 0;
     linesCleared = 0;
     level = 0;
@@ -455,6 +444,14 @@ function drawUI() {
     // Title or something
     ctx.fillText('Evolutionary', 1.5, 3);
     ctx.fillText('Tetris', 3, 4);
+    if (!humanMode) {
+        ctx.fillText('Gen: 50', 1, 8);
+        ctx.fillText('Height-W: 0.51', 1, 9);
+        ctx.fillText('Line-W: 0.76', 1, 10);
+        ctx.fillText('Hole-W: 0.35', 1, 11);
+        ctx.fillText('Bump-W: 0.18', 1, 12);
+    }
+
     // Instructions
     if (humanMode) {
         ctx.fillText('← / → = Move   A = Human', 6, 25);
@@ -481,7 +478,7 @@ function drawUI() {
     ctx.lineWidth = 0.1;
     ctx.strokeStyle = "#FFF";
     ctx.strokeRect(3, 16, 6, 6);
-    // drawMatrix(player.heldPiece, { x: 4, y: 17 })
+    drawMatrix(player.heldPiece, { x: 4, y: 17 })
     // Next Piece
     ctx.fillStyle = '#FFF';
     ctx.fillText('Next Piece', 21, 15);
@@ -515,12 +512,12 @@ function lineCheck() {
 }
 
 function randomPiece() {
-    // return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
-    const piece = (createPiece(pieceArray[arena.pieceIdx % (pieceArray.length - 1)]));
-    arena.pieceIdx += 1;
-    // debugger;
-    console.log(arena.pieceIdx);
-    return piece;
+    return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
+    // const piece = (createPiece(pieceArray[arena.pieceIdx % (pieceArray.length - 1)]));
+    // arena.pieceIdx += 1;
+    // // debugger;
+    // console.log(arena.pieceIdx);
+    // return piece;
 
 }
 
