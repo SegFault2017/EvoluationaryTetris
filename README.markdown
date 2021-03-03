@@ -47,7 +47,14 @@ where P is the score function of the current piece and
 
 
 ## Results
-By using the tuned parameters, aggregated heights, # of completed lines, # of holes, bumpiness of the current state, from the Genetic algorithm after 50 generations, the AI can clear up to 14000 lines. 
+After tuning, the optimal parameters has value:
+- Aggregated Hiehgts: 0.51
+- \# of holes: 0.35
+- \# of line cleared: 0.76
+- bumpiness: 0.18
+
+
+By using the tuned parameters from the Genetic algorithm after 50 generations, the AI can clear up to at least 14000 lines. 
 
 ## Used Tech
 
@@ -58,6 +65,6 @@ Project used:
 
 
 ## More
-- A Unity version is avalible here.
+- A [Unity version](https://github.com/SegFault2017/Tetris-With-AI) is avalible here.
 - [Is it possible to Play Tetris forever](https://tetris.fandom.com/wiki/Playing_forever)
 
