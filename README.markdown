@@ -18,6 +18,8 @@ This AI uses evolutionary technique to improve over time. Through selection, cro
 - [Building A Tetris Bot Part 2: Genetic Algorithms](https://medium.com/@omgimanerd/building-a-tetris-bot-part-2-genetic-algorithms-889fc66006b1)
 
 ## Demo
+[Live Demo](http://evolutionarytetris.com/)
+
 
 ![Part 1](demo/demo.gif)
 
