@@ -6,7 +6,6 @@ ctx.scale(20, 20);
 
 
 
-
 // Color palette for the blocks
 var palettes = {
     standard: ['#ffeb3b', '#9c27b0', '#ff9800', '#3f51b5', '#03a9f4', '#4caf50', '#f44336'],
@@ -37,6 +36,7 @@ var arena = {
     width: 10,
     height: 22,
     matrix: createMatrix(10, 22),
+    pieceIdx: 0,
 
     // Methods
     draw: function () {
@@ -180,10 +180,13 @@ var player = {
     },
 
     reset: function () {
+
         this.matrix = this.nextPiece;
         this.nextPiece = randomPiece();
         this.pos.y = 0;
         this.pos.x = Math.floor(arena.matrix[0].length / 2) - Math.floor(this.matrix[0].length / 2);
+        debugger;
+
         if (this.collisionCheck()) {
             alert("Game Over")
             reset();
@@ -309,6 +312,8 @@ function init() {
 }
 
 function reset() {
+    // pieceIdx = 0;
+    arena.pieceIdx = 0;
     player.nextPiece = randomPiece();
     arena.matrix.forEach(row => row.fill(0));
     player.reset();
@@ -488,7 +493,11 @@ function lineCheck() {
 }
 
 function randomPiece() {
-    return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
+    // return (createPiece(pieceArray[Math.floor(Math.random() * pieceArray.length)]));
+    const piece = (createPiece(pieceArray[arena.pieceIdx % (pieceArray.length - 1)]));
+    arena.pieceIdx += 1;
+    return piece;
+
 }
 
 function clone(object) {

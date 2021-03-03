@@ -16,7 +16,7 @@ AI.prototype._best = function (player) {
         while (player.canMoveLeft()) {
             player.shift(-1);
         }
-        console.log("hello");
+        // console.log("hello");
 
         while (player.canMoveRight()) {
             player.hardDropNotLand();
