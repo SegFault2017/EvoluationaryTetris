@@ -30,21 +30,18 @@ The goal of this genetric algo is to clear as many lines as possible, and hence,
 
 To achieve this, the AI will select the best move for a given piece by trying out all the possible rotations and translations. It computes a score for each possible move , and selects the one with the best score as its next move. The score for each move is computed by assessing the grid the move would result in. This assessment is based on 4 heuristics: aggregate height, complete lines, holes, and bumpiness, each of which the AI will try to either minimize or maximize.
 
-The formula to compute the score is given by:
-$$
-BestScore = \underset{0 \le r \le 3, 0 \le t \le 22}{\mathrm{argmax}}(P_{r,t})
-$$
-Where r is the # of roatations, t is the # of translations to the right from 0.
-$$
-P =  - W_{holes} * (H) + W_{lines} * (L) - W_{AH} * (AH) - W_{bumpiness} * (B) - W_{bumpiness} * (B)
-$$
+
+![ScoreFunc](equation.png)
+
 where P is the score function of the current piece and 
 
 - H: is the number of holes after the piece has landed
 - L: is the number of completed lines after the piece has landed
 - AH: is the aggregate height, the sum of all column's height after the piece has landed
 - B: the bumpiness/roughess, the sum of difference of every 2 adjacent colum's height after the piece has landed.
-- 
+
+
+
 
 
 ## Results
