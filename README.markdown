@@ -9,7 +9,7 @@
 - [Used Tech](#used-tech)
 - [Fun Stuff](#fun-stuff)
 
-## Evlolutionary Tetris
+## Evolutionary Tetris
 This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to paly [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
 
 ## Acknowledgement
