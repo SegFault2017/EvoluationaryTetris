@@ -28,7 +28,7 @@ This AI uses evolutionary technique to improve over time. Through selection, cro
 
 Genetic algorithms work by creating a population of "genomes" that have multiple "genes", representing parameters for the algorithm. Each of these individuals in the population is evaluated and a "fitness" score for each genome is produced. The fittest individuals would reproduce and pass favourable genes down to the next generation. Mutation also occurs where genes are randomly modified in hopes of creating more beneficial features.
 
-The goal of this genetric algo is to clear as many lines as possible, and hence, to make as many moves as possible and select the bes move with the hights score.
+The goal of this genetric algo is to clear as many lines as possible, and hence, to make as many moves as possible and select the best move with the hightest score.
 
 To achieve this, the AI will select the best move for a given piece by trying out all the possible rotations and translations. It computes a score for each possible move , and selects the one with the best score as its next move. The score for each move is computed by assessing the grid the move would result in. This assessment is based on 4 heuristics: aggregate height, complete lines, holes, and bumpiness, each of which the AI will try to either minimize or maximize.
 
