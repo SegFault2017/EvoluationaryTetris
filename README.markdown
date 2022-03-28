@@ -1,6 +1,7 @@
 ## Table of contents
 
 - [Evlolutionary Tetris](#evolutionary-tetris)
+- [Documentation] (#formal)
 - [Acknowledgement](#acknowledgement)
 - [Demo](#demo)
 - [Heuristic](#heuristic)
@@ -11,6 +12,9 @@
 
 ## Evolutionary Tetris
 This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to paly [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
+
+## Formal
+https://catnip-chiller-6ba.notion.site/CS208-Final-Project-00b752eb61fa45e4ab4e5bd92751cd1b
 
 ## Acknowledgement
 
@@ -41,8 +45,6 @@ where P is the score function of the current piece and
 - L: is the number of completed lines after the piece has landed
 - AH: is the aggregate height, the sum of all column's height after the piece has landed
 - B: the bumpiness/roughess, the sum of difference of every 2 adjacent colum's height after the piece has landed.
-
-
 
 
 
