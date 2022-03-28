@@ -1,7 +1,7 @@
 ## Table of contents
 
 - [Evlolutionary Tetris](#evolutionary-tetris)
-- [Formal] (#formal)
+- [Formal](#formal)
 - [Acknowledgement](#acknowledgement)
 - [Demo](#demo)
 - [Heuristic](#heuristic)
