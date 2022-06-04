@@ -11,7 +11,7 @@
 - [Fun Stuff](#fun-stuff)
 
 ## Evolutionary Tetris
-This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to paly [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
+This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to play [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
 
 ## Formal Document
 Here's a document to explain the details of the algorithm and the derivation of my herustic functions.
