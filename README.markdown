@@ -1,7 +1,7 @@
 ## Table of contents
 
 - [Evlolutionary Tetris](#evolutionary-tetris)
-- [Formal](#formal)
+- [Formal](#a-formal-document)
 - [Acknowledgement](#acknowledgement)
 - [Demo](#demo)
 - [Heuristic](#heuristic)
@@ -13,7 +13,8 @@
 ## Evolutionary Tetris
 This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to paly [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
 
-## Formal
+## Formal Document
+Here's a document to explain details of the algorithm and the derication of my herustic.
 https://catnip-chiller-6ba.notion.site/CS208-Final-Project-00b752eb61fa45e4ab4e5bd92751cd1b
 
 ## Acknowledgement
