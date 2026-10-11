@@ -81,10 +81,10 @@ State: `board`, `piece` (`{ matrix, pos }`), `next`, `held`, `score`, `highscore
 
 Actions, all behaving as today unless a deviation says otherwise:
 - `shift(dir)`: move by ±1. Undo on collision.
-- `rotate(dir)`: rotate with today's wall-kick search (offsets +1, −2, +3, …). Give up once the offset exceeds the matrix width. On give-up, today's code calls `rotate(-dir)`, which only transposes, so a failed rotation leaves the piece mirrored. **This is kept as-is**: the AI search uses the same rotation, and parity depends on it. It is listed under "Known quirks kept" and can be fixed in a later change.
+- `rotate(dir)`: rotate with today's wall-kick search (offsets +1, −2, +3, …). Give up once the offset exceeds the matrix width. On give-up, the matrix and `x` are restored and the rotation doesn't happen (deviation D8).
 - `softDrop()`: `y++`. On collision: `y--`, then lock. Lock means merge, `clearLines`, scoring, then `spawn()`. Resets `dropCount`.
 - `hardDrop()`: fall to the landing row, then `softDrop()`.
-- `hold()`: swap `held` and the current matrix, with the same wall kick. Swap back if no fit. No once-per-turn limit.
+- `hold()`: swap `held` and the current matrix, with the same wall kick. If nothing fits, nothing changes (D8). No once-per-turn limit.
 - `tick(dt)`: if `paused` or `gameOver`, do nothing. Otherwise `dropCount += dt`, and call `softDrop()` once `dropCount > max(dropInterval − level·60, 60)`.
 - `spawn()`: `next` becomes current, then a new `next`. `pos = { x: floor(10/2) − floor(w/2), y: 0 }`. If it collides, set `gameOver = true` and return. In AI mode, apply `bestMove`. If that returns `null`, keep the spawned piece (deviation D3).
 - `reset()`: empty board, new `next` and `held`, `score = lines = level = 0`, `dropCount = 0`, `gameOver = false`. `highscore` is kept.
@@ -122,16 +122,16 @@ Scoring on lock with `k` cleared lines: `score += 50 · (2^k − 1)`, i.e. 50/15
 | D2 | AI best comparison changes from `!bestScore` to `bestScore === null` | A score of exactly 0 was treated as "no score yet" |
 | D3 | When no placement is legal, the piece keeps its spawn rotation and position | Today it is left in whatever rotation the search tried last |
 | D4 | The AI panel shows weights from `WEIGHTS` with `toFixed(2)`, so holes shows **0.36** instead of 0.35 | One source of truth |
-| D5 | Removed: `debugger;`, per-move `console.log`s, `player.moveLeft`, `canMoveLeft`, `arena.pieceIdx`, commented-out code. `e.keyCode` → `e.key` | Clean-up |
+| D5 | Removed: `debugger;`, per-move `console.log`s, `player.moveLeft`, `canMoveLeft`, `arena.pieceIdx`, commented-out code. `e.keyCode` → `e.key`. `preventDefault` only for keys the game handles (today it blocks every key, including browser shortcuts) | Clean-up |
 | D6 | Unpausing no longer drops the piece one row instantly. `main.js` computes `dt` every frame, and `Game.tick` discards it while paused | Today `lastTime` freezes during pause, so the first `dt` after unpausing covers the whole pause |
 | D7 | The cdnjs `meyer-reset` `<link>` (loaded with no SRI) is removed. The exact reset CSS is copied into the top of `src/style.css`, fetched once from cdnjs (the user is asked before the fetch) | No third-party request at runtime, so no CDN tampering or outage risk |
+| D8 | When a rotation or hold can't fit anywhere in its wall-kick search, it is a no-op: matrix, held piece and `x` are unchanged | Today's give-up calls `rotate(-dir)` / `switchPiece()` again, which can recurse forever. This was confirmed: rotating a flat I resting on a full stack throws `RangeError: Maximum call stack size exceeded`. AI parity is unaffected, because the AI only rotates at spawn with an empty top, where kicks never give up |
 
 Everything else is unchanged: hold has no limit per turn, ghost piece, drop timing, scoring, level curve and key mapping.
 
 ### Known quirks kept
 
 These are left alone in this refactor because the user chose clean-up only, with no bug fixes, and AI parity depends on them:
-- A failed rotation leaves the piece mirrored (`rotate(-dir)` only transposes).
 - The AI scores boards before clearing full lines (the tuned weights depend on it).
 - `equation.png` repeats the bumpiness term.
 
