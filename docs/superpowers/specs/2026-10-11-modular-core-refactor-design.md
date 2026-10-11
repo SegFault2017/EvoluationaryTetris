@@ -32,7 +32,7 @@ src/
     render.js         render(ctx, game): board, ghost, panels, overlays
     input.js          bindKeys(game) using e.key
   main.js             canvas setup, rAF loop, WEIGHTS constant
-  style.css           unchanged
+  style.css           meyer-reset 2.0 copied in at the top (public domain), otherwise unchanged
 test/
   pieces.test.js  board.test.js  game.test.js  ai.test.js
 ```
@@ -105,7 +105,7 @@ Scoring on lock with `k` cleared lines: `score += 50 · (2^k − 1)`, i.e. 50/15
 
 `render(ctx, game, weights)` gives the same visual result as today's `coverFrame` + `player.draw` (including the ghost piece) + `arena.draw` + `drawUI`, at the same coordinates (canvas scaled ×20, arena offset `{ x: 10, y: 2 }`), with the same palette and the same dimmed look while paused. Differences:
 - AI panel weights are printed with `weights.<name>.toFixed(2)` from the same `WEIGHTS` object (deviation D4). "Gen: 50" stays a literal label.
-- When `gameOver` is set, a centred "Game Over" / "Press R" overlay is drawn in the same style as "Game Paused" (deviation D1).
+- When `gameOver` is set, a centred "Game Over" / "Press R" overlay is drawn in the same style as "Game Paused" (deviation D1). The active piece and its ghost are **not** drawn. Only the final stack, the side panels and the overlay are shown.
 
 ### `main.js`
 
@@ -123,6 +123,8 @@ Scoring on lock with `k` cleared lines: `score += 50 · (2^k − 1)`, i.e. 50/15
 | D3 | When no placement is legal, the piece keeps its spawn rotation and position | Today it is left in whatever rotation the search tried last |
 | D4 | The AI panel shows weights from `WEIGHTS` with `toFixed(2)`, so holes shows **0.36** instead of 0.35 | One source of truth |
 | D5 | Removed: `debugger;`, per-move `console.log`s, `player.moveLeft`, `canMoveLeft`, `arena.pieceIdx`, commented-out code. `e.keyCode` → `e.key` | Clean-up |
+| D6 | Unpausing no longer drops the piece one row instantly. `main.js` computes `dt` every frame, and `Game.tick` discards it while paused | Today `lastTime` freezes during pause, so the first `dt` after unpausing covers the whole pause |
+| D7 | The cdnjs `meyer-reset` `<link>` (loaded with no SRI) is removed. The exact reset CSS is copied into the top of `src/style.css`, fetched once from cdnjs (the user is asked before the fetch) | No third-party request at runtime, so no CDN tampering or outage risk |
 
 Everything else is unchanged: hold has no limit per turn, ghost piece, drop timing, scoring, level curve and key mapping.
 
