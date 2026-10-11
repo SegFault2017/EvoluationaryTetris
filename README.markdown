@@ -1,20 +1,21 @@
 ## Table of contents
 
-- [Evlolutionary Tetris](#evolutionary-tetris)
-- [Formal](#a-formal-document)
+- [Evolutionary Tetris](#evolutionary-tetris)
+- [Formal Document](#formal-document)
 - [Acknowledgement](#acknowledgement)
 - [Demo](#demo)
+- [Genetic Algorithm](#genetic-algorithm)
 - [Heuristic](#heuristic)
-- [Genetic](#genetic-algo)
 - [Results](#results)
-- [Used Tech](#used-tech)
+- [Run locally](#run-locally)
+- [Code layout](#code-layout)
 - [Fun Stuff](#fun-stuff)
 
 ## Evolutionary Tetris
-This AI uses evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI will learn to play [Tetris](https://en.wikipedia.org/wiki/Tetris) in as few moves as possible.
+This AI uses an evolutionary technique to improve over time. Through selection, crossover, and mutation, the AI learns to play [Tetris](https://en.wikipedia.org/wiki/Tetris) and clear as many lines as possible.
 
 ## Formal Document
-Here's a document to explain the details of the algorithm and the derivation of my herustic functions.
+Here's a document that explains the details of the algorithm and the derivation of my heuristic functions.
 https://catnip-chiller-6ba.notion.site/CS208-Final-Project-00b752eb61fa45e4ab4e5bd92751cd1b
 
 ## Acknowledgement
@@ -25,49 +26,69 @@ https://catnip-chiller-6ba.notion.site/CS208-Final-Project-00b752eb61fa45e4ab4e5
 ## Demo
 [Live Demo](https://segfault2017.github.io/EvoluationaryTetris/)
 
-
 ![Part 1](demo/demo.gif)
 
-## Genetic Algo
+Press **A** in the game to hand control to the AI.
+
+## Genetic Algorithm
 ![Genetic](geneticAlgo.png)
 
-Genetic algorithms work by creating a population of "genomes" that have multiple "genes", representing parameters for the algorithm. Each of these individuals in the population is evaluated and a "fitness" score for each genome is produced. The fittest individuals would reproduce and pass favourable genes down to the next generation. Mutation also occurs where genes are randomly modified in hopes of creating more beneficial features.
+Genetic algorithms work by creating a population of "genomes" that have multiple "genes", representing parameters for the algorithm. Each individual in the population is evaluated and gets a "fitness" score. The fittest individuals reproduce and pass favourable genes down to the next generation. Mutation also occurs, where genes are randomly modified in the hope of creating more beneficial features.
 
-The goal of this genetric algo is to clear as many lines as possible, and hence, to make as many moves as possible and select the best move with the hightest score.
+The weights were tuned offline with this process. **The training code is not part of this repo.** The game ships the resulting weights, hardcoded in [`src/main.js`](src/main.js).
 
-To achieve this, the AI will select the best move for a given piece by trying out all the possible rotations and translations. It computes a score for each possible move , and selects the one with the best score as its next move. The score for each move is computed by assessing the grid the move would result in. This assessment is based on 4 heuristics: aggregate height, complete lines, holes, and bumpiness, each of which the AI will try to either minimize or maximize.
-
+## Heuristic
+For each new piece, the AI tries every rotation and every column. It scores the board each move would produce and plays the best one. The score is based on four features, each of which the AI tries to minimise or maximise:
 
 ![ScoreFunc](equation.png)
 
-where P is the score function of the current piece and 
+where P is the score of a placement and
 
-- H: is the number of holes after the piece has landed
-- L: is the number of completed lines after the piece has landed
-- AH: is the aggregate height, the sum of all column's height after the piece has landed
-- B: the bumpiness/roughess, the sum of difference of every 2 adjacent colum's height after the piece has landed.
+- H: the number of holes after the piece has landed
+- L: the number of completed lines after the piece has landed
+- AH: the aggregate height, the sum of all column heights after the piece has landed
+- B: the bumpiness, the sum of the height differences between every two adjacent columns
 
-
+The image above repeats the bumpiness term by mistake. The code uses exactly four terms: `P = -W_AH·AH + W_lines·L - W_holes·H - W_bumpiness·B`.
 
 ## Results
-After tuning, the optimal parameters has value:
-- Aggregated Hiehgts: 0.51
-- \# of holes: 0.35
-- \# of line cleared: 0.76
-- bumpiness: 0.18
+After 50 generations, the tuned weights are:
+- Aggregate height: 0.51
+- Holes: 0.36
+- Lines cleared: 0.76
+- Bumpiness: 0.18
 
+With these weights, the AI can clear at least 14000 lines.
 
-By using the tuned parameters from the Genetic algorithm after 50 generations, the AI can clear up to at least 14000 lines. 
+## Run locally
+ES modules don't load from `file://`, so serve the folder with any static server:
 
-## Used Tech
+```bash
+python3 -m http.server 8000
+# open http://localhost:8000
+```
 
-Project used:
-- Javascript
-- HTML, CSS
-- Architecture: Basic MVC
+Run the tests (Node 18+, no dependencies):
 
+```bash
+npm test
+```
+
+## Code layout
+
+```
+src/core/pieces.js   piece shapes and rotation
+src/core/board.js    collision, line clearing, board metrics
+src/core/ai.js       move search and scoring
+src/core/game.js     game state and rules (no DOM)
+src/ui/render.js     canvas drawing
+src/ui/input.js      keyboard controls
+src/main.js          wiring, game loop, tuned weights
+test/                node --test suites
+```
+
+Plain JavaScript, HTML and CSS: no build step and no dependencies.
 
 ## Fun Stuff
-- A [Unity version](https://github.com/SegFault2017/Tetris-With-AI) is avalible here.
-- [Is it possible to Play Tetris forever](https://tetris.fandom.com/wiki/Playing_forever)
-
+- A [Unity version](https://github.com/SegFault2017/Tetris-With-AI) is available here.
+- [Is it possible to play Tetris forever?](https://tetris.fandom.com/wiki/Playing_forever)
