@@ -1,26 +1,37 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { PIECES, rotate } from '../src/core/pieces.js';
-import { collides, merge, dropY, completeLines } from '../src/core/board.js';
-import { bestMove, scoreBoard } from '../src/core/ai.js';
+import { collides, merge, dropY, clearLines } from '../src/core/board.js';
+import { bestMove, scorePlacement } from '../src/core/ai.js';
 import { boardFrom, snapshot, seededRng, randomBoard } from './helpers.js';
 
-const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
+const WEIGHTS = {
+  landing: -4.500158825082766, lines: 3.4181268101392694, rowTransitions: -3.2178882868487753,
+  columnTransitions: -9.348695305445199, holes: -7.899265427351652, wells: -3.3855972247263626,
+};
 const spawn = (m) => ({ x: Math.floor(10 / 2) - Math.floor(m[0].length / 2), y: 0 });
 const drop = (b, { matrix, x }) => merge(b, matrix, { x, y: dropY(b, matrix, { x, y: 0 }) });
+const VERTICAL_I = rotate(PIECES.I); // filled column at index 2
 
-test('scoreBoard = -height*AH + lines*L - holes*H - bumpiness*B', () => {
-  const b = boardFrom('#.........', '..#.......', '###.......'); // AH 6, L 0, H 1, B 5
-  const expected = -WEIGHTS.height * 6 + WEIGHTS.lines * 0 - WEIGHTS.holes * 1 - WEIGHTS.bumpiness * 5;
-  assert.equal(scoreBoard(b, WEIGHTS), expected);
+test('scorePlacement: piece terms are landing height and lines, board terms are scored after clearing', () => {
+  const row = '#########.';
+  const b = boardFrom(row, row, row, row);
+  // Vertical I into the 4-deep well: its middle lands at height (4 + 1) / 2 and clears 4 lines.
+  const p = scorePlacement(b, VERTICAL_I, { x: 7, y: 18 }, WEIGHTS);
+  assert.equal(p.piece, WEIGHTS.landing * 2.5 + WEIGHTS.lines * 4);
+  // The board is empty again: 2 row transitions per row, 1 column transition per column.
+  assert.equal(p.board, WEIGHTS.rowTransitions * 44 + WEIGHTS.columnTransitions * 10);
+  assert.deepEqual(p.after, boardFrom());
+  // Flat I in the middle of an empty floor: height 1, no lines, two more row transitions.
+  const flat = scorePlacement(boardFrom(), PIECES.I, { x: 3, y: 20 }, WEIGHTS);
+  assert.equal(flat.piece, WEIGHTS.landing * 1);
+  assert.equal(flat.board, WEIGHTS.rowTransitions * 46 + WEIGHTS.columnTransitions * 10);
 });
 
 test('bestMove drops an I into a one-column well for a 4-line clear', () => {
   const row = '#########.';
   const b = boardFrom(row, row, row, row);
-  const move = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS);
-  const landed = merge(b, move.matrix, { x: move.x, y: dropY(b, move.matrix, { x: move.x, y: 0 }) });
-  assert.equal(completeLines(landed), 4);
+  assert.equal(clearLines(drop(b, bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS))).cleared, 4);
 });
 
 test('bestMove never mutates its inputs and always returns a legal placement', () => {
@@ -47,18 +58,18 @@ test('bestMove returns null when the piece does not fit where it spawns', () => 
 test('with the next piece known, bestMove sets up a line clear that greedy would miss', () => {
   const b = boardFrom('########..');
   const greedy = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS);
-  const ahead = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS, PIECES.I);
-  assert.deepEqual(greedy.matrix, PIECES.I); // lies flat on the floor: least bumpy right now
-  assert.deepEqual(ahead.matrix, rotate(PIECES.I)); // stands in the gap so the next I can finish the row
+  const ahead = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS, PIECES.T);
+  assert.deepEqual(greedy.matrix, PIECES.I); // lies flat on the floor
+  assert.deepEqual([ahead.matrix, ahead.x], [VERTICAL_I, 7]); // stands in the last column, leaving a notch for the T's stem
   for (const [move, lines] of [[greedy, 0], [ahead, 1]]) {
     const after = drop(b, move);
-    assert.equal(completeLines(drop(after, bestMove(after, PIECES.I, spawn(PIECES.I), WEIGHTS))), lines);
+    assert.equal(clearLines(drop(after, bestMove(after, PIECES.T, spawn(PIECES.T), WEIGHTS))).cleared, lines);
   }
 });
 
 test('when every placement blocks the next spawn, bestMove still returns a legal move scored -Infinity', () => {
-  // The O can only land in the trench under the I's spawn row.
-  const b = boardFrom('###....###', ...Array(20).fill('##########'));
+  // The O can only land in the trench under the I's spawn row (the well in column 9 is too narrow).
+  const b = boardFrom('###....###', ...Array(20).fill('#########.'));
   const move = bestMove(b, PIECES.O, spawn(PIECES.O), WEIGHTS, PIECES.I);
   assert.equal(move.score, -Infinity);
   assert.equal(collides(b, move.matrix, { x: move.x, y: 0 }), false);

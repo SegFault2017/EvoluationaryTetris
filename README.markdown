@@ -35,37 +35,38 @@ Press **A** in the game to hand control to the AI.
 
 Genetic algorithms work by creating a population of "genomes" that have multiple "genes", representing parameters for the algorithm. Each individual in the population is evaluated and gets a "fitness" score. The fittest individuals reproduce and pass favourable genes down to the next generation. Mutation also occurs, where genes are randomly modified in the hope of creating more beneficial features.
 
-The weights were tuned offline with this process. **The training code is not part of this repo.** The game ships the resulting weights, hardcoded in [`src/main.js`](src/main.js).
+The original four-feature weights (aggregate height, lines, holes, bumpiness) were tuned offline with this process. **The training code is not part of this repo.** The shipped AI now uses a stronger published feature set instead (see below); evolving weights for those features is the natural next step.
 
 ## Heuristic
-For each new piece, the AI tries every rotation and every column. Since the next piece is shown, it then tries every placement of that piece too, and scores each move by the best board the pair can produce (a two-ply lookahead). It plays the move with the highest score; a move that leaves the next piece nowhere to spawn counts as a loss. The score is based on four features, each of which the AI tries to minimise or maximise:
+For each new piece, the AI tries every rotation and every column, scores the placement, and plays the best one. Each placement is scored with [Pierre Dellacherie's](https://web.archive.org/web/20090529120530/http://www.colinfahey.com/tetris/tetris.html) six features. Two belong to the piece, the rest are measured on the board **after** full rows are cleared:
+
+- landing height: how high the middle of the piece ends up
+- lines cleared by the piece
+- row transitions: filled/empty changes along each row, with the walls counted as filled
+- column transitions: the same down each column, with the floor counted as filled
+- holes: empty cells with a filled cell somewhere above them
+- cumulative wells: for every well (an empty cell with filled cells or walls on both sides), 1 + 2 + … + its depth
+
+The weights are the [El-Tetris](https://imake.ninja/el-tetris-an-improvement-on-pierre-dellacheries-algorithm/) ones (Islam El-Ashi, 2011), hardcoded in [`src/main.js`](src/main.js): landing −4.50, lines 3.42, row transitions −3.22, column transitions −9.35, holes −7.90, wells −3.39. Dellacherie's own integer weights (−1, +1, −1, −1, −4, −1, with lines × piece cells in them) play almost as well; see the results.
+
+`bestMove` can also take the next piece and search two plies deep (every placement of the next piece after every placement of this one). The game doesn't use it: at this strength the benefit can't be measured, and it costs about 35× per move.
+
+The original heuristic, `P = -W_AH·AH + W_lines·L - W_holes·H - W_bumpiness·B` with GA-tuned weights 0.51 / 0.76 / 0.36 / 0.18, is shown in `equation.png` (which repeats the bumpiness term by mistake) and kept in the results below for comparison.
 
 ![ScoreFunc](equation.png)
 
-where P is the score of a placement and
-
-- H: the number of holes after the piece has landed
-- L: the number of completed lines after the piece has landed
-- AH: the aggregate height, the sum of all column heights after the piece has landed
-- B: the bumpiness, the sum of the height differences between every two adjacent columns
-
-The image above repeats the bumpiness term by mistake. The code uses exactly four terms: `P = -W_AH·AH + W_lines·L - W_holes·H - W_bumpiness·B`.
-
 ## Results
-After 50 generations, the tuned weights are:
-- Aggregate height: 0.51
-- Holes: 0.36
-- Lines cleared: 0.76
-- Bumpiness: 0.18
-
 Measured with `npm run bench` (seeded games, so the numbers repeat):
 
-| Search | Mean lines per game | Seeds |
-|---|---|---|
-| Greedy, current piece only | 670 (median 361) | 10 |
-| Two-ply lookahead with the next piece | 11,778 (one game still alive at the 50,000-piece cap) | 3 |
+| Scorer | Search | Lines per game | Games |
+|---|---|---|---|
+| Four features, GA weights | Greedy | mean 670, median 361 | 10 |
+| Four features, GA weights | Two-ply | mean 11,778 | 3, one still alive at a 50,000-piece cap |
+| Dellacherie features, Dellacherie weights | Greedy | mean 791,990; one game lost at 775,974 | 3, two still alive at a 2,000,000-piece cap |
+| Dellacherie features, El-Tetris weights | Greedy | all alive at 799,997 | 3, cap 2,000,000 pieces |
+| Dellacherie features, Dellacherie weights | Two-ply | all alive at 39,998 | 2, cap 100,000 pieces (4 ms per move) |
 
-The lookahead is about 35× more work per piece, roughly 3 ms, which is invisible at the game's drop speed.
+A greedy move costs about 0.12 ms, invisible at the game's drop speed. The 2,000,000-piece games take about 4 minutes each: `node test/bench.js 3 2000000`.
 
 ## Run locally
 ES modules don't load from `file://`, so serve the folder with any static server:
@@ -81,7 +82,7 @@ Run the tests (Node 18+, no dependencies):
 npm test
 ```
 
-Measure how many lines the AI clears per game (defaults: 5 seeded games, 2000 pieces each):
+Measure how many lines the AI clears per game (defaults: 5 seeded games, 50,000 pieces each, about 40 s):
 
 ```bash
 npm run bench            # or: node test/bench.js <games> <maxPieces>

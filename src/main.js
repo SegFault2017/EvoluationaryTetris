@@ -2,8 +2,11 @@ import { Game } from './core/game.js';
 import { render } from './ui/render.js';
 import { bindKeys } from './ui/input.js';
 
-// Tuned offline by a genetic algorithm (50 generations). The training code is not in this repo.
-const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
+// El-Tetris weights (Islam El-Ashi, 2011) for Dellacherie's six features. See README "Heuristic".
+const WEIGHTS = {
+  landing: -4.500158825082766, lines: 3.4181268101392694, rowTransitions: -3.2178882868487753,
+  columnTransitions: -9.348695305445199, holes: -7.899265427351652, wells: -3.3855972247263626,
+};
 
 const canvas = document.getElementById('cnv');
 const ctx = canvas?.getContext('2d');

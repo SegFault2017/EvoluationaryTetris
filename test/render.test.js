@@ -3,7 +3,10 @@ import assert from 'node:assert/strict';
 import { Game } from '../src/core/game.js';
 import { render } from '../src/ui/render.js';
 
-const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
+const WEIGHTS = {
+  landing: -4.500158825082766, lines: 3.4181268101392694, rowTransitions: -3.2178882868487753,
+  columnTransitions: -9.348695305445199, holes: -7.899265427351652, wells: -3.3855972247263626,
+};
 
 // Records what render draws: text, and how many cells were filled.
 function recordingCtx() {
@@ -19,7 +22,7 @@ test('AI panel prints the weights from the one WEIGHTS object (D4)', () => {
   g.setMode('ai');
   const ctx = recordingCtx();
   render(ctx, g, WEIGHTS);
-  for (const s of ['Gen: 50', 'Height-W: 0.51', 'Line-W: 0.76', 'Hole-W: 0.36', 'Bump-W: 0.18', '← / → = Move   A = AI']) {
+  for (const s of ['Land: -4.50', 'Line: 3.42', 'RowT: -3.22', 'ColT: -9.35', 'Hole: -7.90', 'Well: -3.39', '← / → = Move   A = AI']) {
     assert.ok(ctx.texts.includes(s), `missing "${s}"`);
   }
 });

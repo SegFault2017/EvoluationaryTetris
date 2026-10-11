@@ -2,8 +2,11 @@
 import { Game } from '../src/core/game.js';
 import { seededRng } from './helpers.js';
 
-const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
-const [games = 5, maxPieces = 2000] = process.argv.slice(2).map(Number);
+const WEIGHTS = {
+  landing: -4.500158825082766, lines: 3.4181268101392694, rowTransitions: -3.2178882868487753,
+  columnTransitions: -9.348695305445199, holes: -7.899265427351652, wells: -3.3855972247263626,
+};
+const [games = 5, maxPieces = 50_000] = process.argv.slice(2).map(Number);
 
 const lines = [];
 const t0 = performance.now();

@@ -4,6 +4,7 @@ const PALETTE = ['#ffeb3b', '#9c27b0', '#ff9800', '#3f51b5', '#03a9f4', '#4caf50
 const BACKGROUND = 'rgba(0,10,30,1)';
 const GHOST = 'rgba(255,255,255,0.15)';
 const ARENA = { x: 10, y: 2 };
+const WEIGHT_LABELS = { landing: 'Land', lines: 'Line', rowTransitions: 'RowT', columnTransitions: 'ColT', holes: 'Hole', wells: 'Well' };
 
 export function render(ctx, game, weights) {
   ctx.fillStyle = BACKGROUND;
@@ -46,11 +47,7 @@ function drawPanels(ctx, game, weights) {
   ctx.fillText('Evolutionary', 1.5, 3);
   ctx.fillText('Tetris', 3, 4);
   if (game.mode === 'ai') {
-    ctx.fillText('Gen: 50', 1, 8);
-    ctx.fillText(`Height-W: ${weights.height.toFixed(2)}`, 1, 9);
-    ctx.fillText(`Line-W: ${weights.lines.toFixed(2)}`, 1, 10);
-    ctx.fillText(`Hole-W: ${weights.holes.toFixed(2)}`, 1, 11);
-    ctx.fillText(`Bump-W: ${weights.bumpiness.toFixed(2)}`, 1, 12);
+    Object.entries(weights).forEach(([name, w], i) => ctx.fillText(`${WEIGHT_LABELS[name]}: ${w.toFixed(2)}`, 1, 8 + i));
   }
 
   ctx.fillText(`← / → = Move   A = ${game.mode === 'ai' ? 'AI' : 'Human'}`, 6, 25);

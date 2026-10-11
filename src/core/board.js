@@ -69,15 +69,34 @@ export function clearLines(board) {
   return { board: rows, cleared };
 }
 
-function columnHeight(board, c) {
-  let r = 0;
-  while (r < board.length && board[r][c] === 0) r++;
-  return board.length - r;
+// Dellacherie's board features. Walls count as filled for rows, the floor for columns.
+// Filled/empty changes scanning each row from the left wall to the right wall.
+export function rowTransitions(board) {
+  let total = 0;
+  for (const row of board) {
+    let prev = 1;
+    for (const v of row) {
+      const filled = v !== 0 ? 1 : 0;
+      if (filled !== prev) total++;
+      prev = filled;
+    }
+    if (prev === 0) total++;
+  }
+  return total;
 }
 
-export function aggregateHeight(board) {
+// Filled/empty changes scanning each column from above the top down to the floor.
+export function columnTransitions(board) {
   let total = 0;
-  for (let c = 0; c < board[0].length; c++) total += columnHeight(board, c);
+  for (let c = 0; c < board[0].length; c++) {
+    let prev = 0;
+    for (const row of board) {
+      const filled = row[c] !== 0 ? 1 : 0;
+      if (filled !== prev) total++;
+      prev = filled;
+    }
+    if (prev === 0) total++;
+  }
   return total;
 }
 
@@ -94,14 +113,17 @@ export function holes(board) {
   return count;
 }
 
-export function completeLines(board) {
-  return board.filter(row => row.every(v => v !== 0)).length;
-}
-
-export function bumpiness(board) {
+// A well cell is empty with filled cells (or walls) on both sides. Each one adds the number
+// of empty cells from it down to the next filled cell, so a well of depth d adds 1 + 2 + … + d.
+export function wells(board) {
+  const width = board[0].length;
   let total = 0;
-  for (let c = 0; c < board[0].length - 1; c++) {
-    total += Math.abs(columnHeight(board, c) - columnHeight(board, c + 1));
+  for (let c = 0; c < width; c++) {
+    for (let r = 0; r < board.length; r++) {
+      if (board[r][c] !== 0) continue;
+      if ((c > 0 && board[r][c - 1] === 0) || (c < width - 1 && board[r][c + 1] === 0)) continue;
+      for (let k = r; k < board.length && board[k][c] === 0; k++) total++;
+    }
   }
   return total;
 }

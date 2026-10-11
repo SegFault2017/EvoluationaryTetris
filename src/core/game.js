@@ -41,7 +41,9 @@ export class Game {
       return;
     }
     if (this.mode === 'ai') {
-      const move = bestMove(this.board, matrix, this.piece.pos, this.weights, this.next);
+      // Greedy on purpose: passing this.next gives a two-ply lookahead, but with these weights the
+      // greedy AI already outlives any benchmark, and the lookahead costs 35x per move.
+      const move = bestMove(this.board, matrix, this.piece.pos, this.weights);
       if (move) this.piece = { matrix: move.matrix, pos: { x: move.x, y: 0 } };
     }
   }

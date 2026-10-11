@@ -6,7 +6,10 @@ import { createBoard } from '../src/core/board.js';
 import { bestMove } from '../src/core/ai.js';
 import { boardFrom } from './helpers.js';
 
-const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
+const WEIGHTS = {
+  landing: -4.500158825082766, lines: 3.4181268101392694, rowTransitions: -3.2178882868487753,
+  columnTransitions: -9.348695305445199, holes: -7.899265427351652, wells: -3.3855972247263626,
+};
 const newGame = () => new Game({ weights: WEIGHTS, rng: () => 0 }); // every random piece is a T
 const copy = (m) => m.map(row => [...row]);
 const VERTICAL_I = rotate(PIECES.I); // filled column at index 2
@@ -146,7 +149,7 @@ test("setMode('ai') resets and lets the AI place pieces; 'human' does not reset"
   assert.equal(g.mode, 'ai');
   assert.equal(g.dropInterval, 1);
   assert.equal(g.score, 0);
-  const expected = bestMove(createBoard(10, 22), PIECES.T, { x: 4, y: 0 }, WEIGHTS, PIECES.T); // next is a T too
+  const expected = bestMove(createBoard(10, 22), PIECES.T, { x: 4, y: 0 }, WEIGHTS);
   assert.deepEqual(g.piece, { matrix: expected.matrix, pos: { x: expected.x, y: 0 } });
   g.score = 50;
   g.setMode('human');

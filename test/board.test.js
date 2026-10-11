@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { PIECES, rotate } from '../src/core/pieces.js';
 import {
   createBoard, collides, merge, dropY, kick, rotateWithKick, clearLines,
-  aggregateHeight, holes, completeLines, bumpiness,
+  rowTransitions, columnTransitions, holes, wells,
 } from '../src/core/board.js';
 import { boardFrom, snapshot } from './helpers.js';
 
@@ -77,12 +77,11 @@ test('clearLines removes full rows, including non-adjacent ones, without mutatin
   assert.equal(clearLines(boardFrom('#########.')).cleared, 0);
 });
 
-test('metrics match a hand-checked board', () => {
-  // column heights 3,1,2,0…; one hole at column 0
-  const b = boardFrom('#.........', '..#.......', '###.......');
-  assert.equal(aggregateHeight(b), 6);
-  assert.equal(holes(b), 1);
-  assert.equal(bumpiness(b), 5);
-  assert.equal(completeLines(b), 0);
-  assert.equal(completeLines(boardFrom(FULL, '#.........')), 1);
+test('Dellacherie metrics match hand-checked boards', () => {
+  const metrics = (b) => [rowTransitions(b), columnTransitions(b), holes(b), wells(b)];
+  assert.deepEqual(metrics(createBoard(10, 22)), [44, 10, 0, 0]); // 2 per empty row, 1 per empty column
+  // column heights 3,1,2,0…; one hole at column 0; the dip at column 1 is open on the right, so no well
+  assert.deepEqual(metrics(boardFrom('#.........', '..#.......', '###.......')), [46, 12, 1, 0]);
+  assert.equal(wells(boardFrom('#.########', '#.########')), 3); // depth 2: 2 + 1
+  assert.equal(wells(boardFrom('.#........')), 1); // the wall counts as a side
 });
