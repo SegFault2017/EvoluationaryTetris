@@ -11,6 +11,7 @@ const PLAY_KEYS = {
 
 export function bindKeys(game, target = document) {
   target.addEventListener('keydown', (e) => {
+    if (e.metaKey || e.ctrlKey || e.altKey) return; // leave browser shortcuts alone
     const key = e.key.length === 1 ? e.key.toLowerCase() : e.key;
     if (key === 'p') return game.togglePause();
     if (key === 'r') return game.reset();

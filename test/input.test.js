@@ -60,3 +60,17 @@ test('other keys are left alone so browser shortcuts keep working', () => {
   for (const key of ['Tab', 'F5', 'Meta', 'x']) assert.equal(press(key).prevented, false, key);
   assert.deepEqual(g.calls, []);
 });
+
+test('keys pressed with Cmd, Ctrl or Alt are left to the browser', () => {
+  const g = fakeGame();
+  let handler;
+  bindKeys(g, { addEventListener: (type, fn) => { handler = fn; } });
+  for (const mod of ['metaKey', 'ctrlKey', 'altKey']) {
+    for (const key of ['a', 'ArrowLeft', 'p', 'r']) {
+      const e = { key, [mod]: true, prevented: false, preventDefault() { this.prevented = true; } };
+      handler(e);
+      assert.equal(e.prevented, false, `${mod}+${key}`);
+    }
+  }
+  assert.deepEqual(g.calls, []);
+});
