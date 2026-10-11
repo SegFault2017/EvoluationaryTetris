@@ -3,6 +3,11 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import vm from 'node:vm';
+import { bestMove } from '../src/core/ai.js';
+import { PIECES } from '../src/core/pieces.js';
+import { seededRng, randomBoard } from './helpers.js';
+
+const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
 
 // Runs the original browser scripts in a sandbox with a fake DOM and canvas.
 function loadOld() {
@@ -39,4 +44,20 @@ test('original code loads and its AI puts an O in the left corner of an empty bo
   const o = [[1, 1], [1, 1]];
   assert.deepEqual(oldBest(old, empty, o), { matrix: o, x: 0 });
   assert.equal(JSON.stringify(old.arena.matrix), JSON.stringify(empty)); // the old AI un-merges after itself
+});
+
+// 300 random boards x 7 pieces. Every candidate's aggregate height is > 0, so no score is
+// exactly 0 and the !bestScore → === null change (D2) cannot cause a difference here.
+test('new bestMove picks the same rotation and column as the original AI', () => {
+  const old = loadOld();
+  const rng = seededRng(2026);
+  for (let i = 0; i < 300; i++) {
+    const board = randomBoard(rng);
+    for (const [name, piece] of Object.entries(PIECES)) {
+      const pos = { x: Math.floor(10 / 2) - Math.floor(piece[0].length / 2), y: 0 };
+      const expected = oldBest(old, board, piece);
+      const actual = bestMove(board, piece, pos, WEIGHTS);
+      assert.equal(JSON.stringify(actual), JSON.stringify(expected), `board ${i}, piece ${name}`);
+    }
+  }
 });
