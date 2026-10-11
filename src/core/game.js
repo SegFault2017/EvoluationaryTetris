@@ -1,4 +1,4 @@
-import { createBoard, collides, merge, dropY, kick, rotateWithKick, clearLines } from './board.js';
+import { createBoard, spawnPos, collides, merge, dropY, kick, rotateWithKick, clearLines } from './board.js';
 import { randomPiece } from './pieces.js';
 import { bestMove } from './ai.js';
 
@@ -35,13 +35,13 @@ export class Game {
   spawn() {
     const matrix = this.next;
     this.next = randomPiece(this.rng);
-    this.piece = { matrix, pos: { x: Math.floor(WIDTH / 2) - Math.floor(matrix[0].length / 2), y: 0 } };
+    this.piece = { matrix, pos: spawnPos(this.board, matrix) };
     if (collides(this.board, matrix, this.piece.pos)) {
       this.gameOver = true;
       return;
     }
     if (this.mode === 'ai') {
-      const move = bestMove(this.board, matrix, this.piece.pos, this.weights);
+      const move = bestMove(this.board, matrix, this.piece.pos, this.weights, this.next);
       if (move) this.piece = { matrix: move.matrix, pos: { x: move.x, y: 0 } };
     }
   }

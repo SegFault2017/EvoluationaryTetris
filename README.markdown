@@ -38,7 +38,7 @@ Genetic algorithms work by creating a population of "genomes" that have multiple
 The weights were tuned offline with this process. **The training code is not part of this repo.** The game ships the resulting weights, hardcoded in [`src/main.js`](src/main.js).
 
 ## Heuristic
-For each new piece, the AI tries every rotation and every column. It scores the board each move would produce and plays the best one. The score is based on four features, each of which the AI tries to minimise or maximise:
+For each new piece, the AI tries every rotation and every column. Since the next piece is shown, it then tries every placement of that piece too, and scores each move by the best board the pair can produce (a two-ply lookahead). It plays the move with the highest score; a move that leaves the next piece nowhere to spawn counts as a loss. The score is based on four features, each of which the AI tries to minimise or maximise:
 
 ![ScoreFunc](equation.png)
 
@@ -58,7 +58,14 @@ After 50 generations, the tuned weights are:
 - Lines cleared: 0.76
 - Bumpiness: 0.18
 
-With these weights, the AI can clear at least 14000 lines.
+Measured with `npm run bench` (seeded games, so the numbers repeat):
+
+| Search | Mean lines per game | Seeds |
+|---|---|---|
+| Greedy, current piece only | 670 (median 361) | 10 |
+| Two-ply lookahead with the next piece | 11,778 (one game still alive at the 50,000-piece cap) | 3 |
+
+The lookahead is about 35× more work per piece, roughly 3 ms, which is invisible at the game's drop speed.
 
 ## Run locally
 ES modules don't load from `file://`, so serve the folder with any static server:
@@ -74,6 +81,12 @@ Run the tests (Node 18+, no dependencies):
 npm test
 ```
 
+Measure how many lines the AI clears per game (defaults: 5 seeded games, 2000 pieces each):
+
+```bash
+npm run bench            # or: node test/bench.js <games> <maxPieces>
+```
+
 ## Code layout
 
 ```
@@ -84,7 +97,7 @@ src/core/game.js     game state and rules (no DOM)
 src/ui/render.js     canvas drawing
 src/ui/input.js      keyboard controls
 src/main.js          wiring, game loop, tuned weights
-test/                node --test suites
+test/                node --test suites, plus bench.js (lines per game)
 ```
 
 Plain JavaScript, HTML and CSS: no build step and no dependencies.

@@ -1,0 +1,32 @@
+{
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/src/ai.js": {
+    "mtime": 1791719461.575883,
+    "ast_hash": "f3804bb8d3119b62b190127d783364b5",
+    "semantic_hash": "f3804bb8d3119b62b190127d783364b5"
+  },
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/src/script.js": {
+    "mtime": 1791719461.5761852,
+    "ast_hash": "5bd1820c457e1736eac02f283d48d261",
+    "semantic_hash": "5bd1820c457e1736eac02f283d48d261"
+  },
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/index.html": {
+    "mtime": 1791719461.5756671,
+    "ast_hash": "201d61a059fb4815fcbcbff5e076ab60",
+    "semantic_hash": "201d61a059fb4815fcbcbff5e076ab60"
+  },
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/demo/demo.gif": {
+    "mtime": 1791719461.5735483,
+    "ast_hash": "5229315c745e2815a3577ebc2bc1688a",
+    "semantic_hash": "5229315c745e2815a3577ebc2bc1688a"
+  },
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/equation.png": {
+    "mtime": 1791719461.5742135,
+    "ast_hash": "8f5e262ad5571a4aad02098f4bde088a",
+    "semantic_hash": "8f5e262ad5571a4aad02098f4bde088a"
+  },
+  "/Users/raymondtan/Documents/develop/EvoluationaryTetris/geneticAlgo.png": {
+    "mtime": 1791719461.5754826,
+    "ast_hash": "cb5b98c0bf4f3c190207559a5927b330",
+    "semantic_hash": "cb5b98c0bf4f3c190207559a5927b330"
+  }
+}

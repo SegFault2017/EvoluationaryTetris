@@ -1,12 +1,13 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { PIECES } from '../src/core/pieces.js';
+import { PIECES, rotate } from '../src/core/pieces.js';
 import { collides, merge, dropY, completeLines } from '../src/core/board.js';
 import { bestMove, scoreBoard } from '../src/core/ai.js';
 import { boardFrom, snapshot, seededRng, randomBoard } from './helpers.js';
 
 const WEIGHTS = { height: 0.510066, lines: 0.760666, holes: 0.35663, bumpiness: 0.184483 };
 const spawn = (m) => ({ x: Math.floor(10 / 2) - Math.floor(m[0].length / 2), y: 0 });
+const drop = (b, { matrix, x }) => merge(b, matrix, { x, y: dropY(b, matrix, { x, y: 0 }) });
 
 test('scoreBoard = -height*AH + lines*L - holes*H - bumpiness*B', () => {
   const b = boardFrom('#.........', '..#.......', '###.......'); // AH 6, L 0, H 1, B 5
@@ -41,4 +42,25 @@ test('bestMove never mutates its inputs and always returns a legal placement', (
 test('bestMove returns null when the piece does not fit where it spawns', () => {
   const full = boardFrom(...Array(22).fill('##########'));
   assert.equal(bestMove(full, PIECES.T, spawn(PIECES.T), WEIGHTS), null);
+});
+
+test('with the next piece known, bestMove sets up a line clear that greedy would miss', () => {
+  const b = boardFrom('########..');
+  const greedy = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS);
+  const ahead = bestMove(b, PIECES.I, spawn(PIECES.I), WEIGHTS, PIECES.I);
+  assert.deepEqual(greedy.matrix, PIECES.I); // lies flat on the floor: least bumpy right now
+  assert.deepEqual(ahead.matrix, rotate(PIECES.I)); // stands in the gap so the next I can finish the row
+  for (const [move, lines] of [[greedy, 0], [ahead, 1]]) {
+    const after = drop(b, move);
+    assert.equal(completeLines(drop(after, bestMove(after, PIECES.I, spawn(PIECES.I), WEIGHTS))), lines);
+  }
+});
+
+test('when every placement blocks the next spawn, bestMove still returns a legal move scored -Infinity', () => {
+  // The O can only land in the trench under the I's spawn row.
+  const b = boardFrom('###....###', ...Array(20).fill('##########'));
+  const move = bestMove(b, PIECES.O, spawn(PIECES.O), WEIGHTS, PIECES.I);
+  assert.equal(move.score, -Infinity);
+  assert.equal(collides(b, move.matrix, { x: move.x, y: 0 }), false);
+  assert.equal(collides(drop(b, move), PIECES.I, spawn(PIECES.I)), true);
 });

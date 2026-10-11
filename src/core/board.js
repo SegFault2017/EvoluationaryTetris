@@ -4,6 +4,11 @@ export function createBoard(width, height) {
   return Array.from({ length: height }, () => new Array(width).fill(0));
 }
 
+// Where a new piece appears: centred along the top row.
+export function spawnPos(board, matrix) {
+  return { x: Math.floor(board[0].length / 2) - Math.floor(matrix[0].length / 2), y: 0 };
+}
+
 // Anything outside the board counts as filled, so walls, the floor and the area above the top all collide.
 export function collides(board, matrix, pos) {
   for (let y = 0; y < matrix.length; y++) {

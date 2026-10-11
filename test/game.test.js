@@ -146,7 +146,7 @@ test("setMode('ai') resets and lets the AI place pieces; 'human' does not reset"
   assert.equal(g.mode, 'ai');
   assert.equal(g.dropInterval, 1);
   assert.equal(g.score, 0);
-  const expected = bestMove(createBoard(10, 22), PIECES.T, { x: 4, y: 0 }, WEIGHTS);
+  const expected = bestMove(createBoard(10, 22), PIECES.T, { x: 4, y: 0 }, WEIGHTS, PIECES.T); // next is a T too
   assert.deepEqual(g.piece, { matrix: expected.matrix, pos: { x: expected.x, y: 0 } });
   g.score = 50;
   g.setMode('human');
