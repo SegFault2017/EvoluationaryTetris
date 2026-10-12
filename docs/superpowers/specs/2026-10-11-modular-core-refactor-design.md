@@ -1,5 +1,7 @@
 # Modular Core Refactor — Design
 
+> **Superseded:** a dated record from 2026-10-11. The code has changed since; `src/core/ai.js` and the README are current.
+
 Date: 2026-10-11
 Branch: `refactor/modular-core`
 
