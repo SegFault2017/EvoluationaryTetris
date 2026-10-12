@@ -75,6 +75,9 @@ test('clearLines removes full rows, including non-adjacent ones, without mutatin
   assert.equal(clearLines(boardFrom(FULL)).cleared, 1);
   assert.equal(clearLines(boardFrom(FULL, FULL, FULL, FULL)).cleared, 4);
   assert.equal(clearLines(boardFrom('#########.')).cleared, 0);
+  const top = createBoard(10, 22);
+  top[0].fill(1);
+  assert.equal(clearLines(top).cleared, 1); // the top row clears too
 });
 
 test('Dellacherie metrics match hand-checked boards', () => {
