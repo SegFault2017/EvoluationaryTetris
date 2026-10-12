@@ -1,5 +1,7 @@
 # Modular Core Refactor Implementation Plan
 
+> **Superseded:** a dated record from 2026-10-11. The code has changed since; `src/core/ai.js` and the README are current.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 **Goal:** Replace the two global-state scripts (`src/ai.js`, `src/script.js`) with a tested, DOM-free `core/` and a thin `ui/` layer. Gameplay stays the same except for the spec's deviations D1–D8.

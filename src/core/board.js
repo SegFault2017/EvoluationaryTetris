@@ -54,11 +54,11 @@ export function rotateWithKick(board, matrix, pos) {
   return x === null ? { matrix, x: pos.x } : { matrix: rotated, x };
 }
 
-// Same bottom-up scan as the original lineCheck.
+// Bottom-up scan, like the original lineCheck, but the top row is checked too.
 export function clearLines(board) {
   const rows = board.map(row => [...row]);
   let cleared = 0;
-  for (let y = rows.length - 1; y > 0; y--) {
+  for (let y = rows.length - 1; y >= 0; y--) {
     if (rows[y].every(v => v > 0)) {
       rows.splice(y, 1);
       rows.unshift(new Array(rows[0].length).fill(0));
